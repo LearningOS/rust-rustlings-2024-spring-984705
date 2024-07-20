@@ -27,6 +27,9 @@ impl Queue {
 }
 
 fn send_tx(q: Queue, tx: mpsc::Sender<u32>) -> () {
+    // TODO: We want to send `tx` to both threads. But currently, it is moved
+    // into the first thread. How could you solve this problem?
+    let tx1 = tx.clone();
     let qc = Arc::new(q);
     let qc1 = Arc::clone(&qc);
     let qc2 = Arc::clone(&qc);
@@ -34,7 +37,7 @@ fn send_tx(q: Queue, tx: mpsc::Sender<u32>) -> () {
     thread::spawn(move || {
         for val in &qc1.first_half {
             println!("sending {:?}", val);
-            tx.send(*val).unwrap();
+            tx1.send(*val).unwrap();
             thread::sleep(Duration::from_secs(1));
         }
     });
